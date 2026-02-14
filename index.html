@@ -1,68 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Brosal3735 Wk 3 Performance Assessment</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        form { background: #f4f4f4; padding: 15px; border-radius: 5px; }
-        input { margin-bottom: 10px; display: block; }
+        body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #eee; }
+        form { background: #f4f4f4; padding: 20px; border-radius: 8px; border: 1px solid #ccc; max-width: 400px; }
+        input { margin-bottom: 10px; display: block; width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-group { margin-top: 10px; }
+        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 4px; }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-update { background-color: #007bff; color: white; display: none; }
+        .btn-delete { color: #d9534f; text-decoration: none; cursor: pointer; font-weight: bold; }
+        .btn-edit { background: #6c757d; color: white; padding: 5px 10px; }
     </style>
 </head>
 <body>
 
     <h1>Brosal3735 Wk 3 Performance Assessment</h1>
 
-    <form method="POST">
+    <form id="infoForm">
         <h3>Add/Update Information</h3>
-        <input type="hidden" name="id" id="form_id">
-        <input type="text" name="name" id="form_name" placeholder="Name" required>
-        <input type="date" name="dob" id="form_dob" required>
-        <input type="text" name="color" id="form_color" placeholder="Favorite Color">
-        <input type="text" name="place" id="form_place" placeholder="Favorite Place to Visit">
-        <input type="text" name="nickname" id="form_nickname" placeholder="Nickname">
+        <input type="hidden" id="form_id">
+        <input type="text" id="form_name" placeholder="Name" required>
+        <input type="date" id="form_dob" required>
+        <input type="text" id="form_color" placeholder="Favorite Color">
+        <input type="text" id="form_place" placeholder="Favorite Place to Visit">
+        <input type="text" id="form_nickname" placeholder="Nickname">
         
-        <button type="submit" name="add">Add New</button>
-        <button type="submit" name="update">Update Existing</button>
+        <div class="btn-group">
+            <button type="button" id="addBtn" class="btn-add" onclick="saveData()">Add New</button>
+            <button type="button" id="updateBtn" class="btn-update" onclick="updateData()">Update Existing</button>
+        </div>
     </form>
 
     <table>
-        <tr>
-            <th>Name</th>
-            <th>DOB</th>
-            <th>Color</th>
-            <th>Place</th>
-            <th>Nickname</th>
-            <th>Actions</th>
-        </tr>
-        <?php while($row = $result->fetch_assoc()): ?>
-        <tr>
-            <td><?php echo $row['name']; ?></td>
-            <td><?php echo $row['dob']; ?></td>
-            <td><?php echo $row['favorite_color']; ?></td>
-            <td><?php echo $row['favorite_place']; ?></td>
-            <td><?php echo $row['nickname']; ?></td>
-            <td>
-                <a href="?delete=<?php echo $row['id']; ?>" onclick="return confirm('Delete this?')">Delete</a>
-                | 
-                <button onclick="fillForm(<?php echo htmlspecialchars(json_encode($row)); ?>)">Edit</button>
-            </td>
-        </tr>
-        <?php endwhile; ?>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>DOB</th>
+                <th>Color</th>
+                <th>Place</th>
+                <th>Nickname</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="dataTableBody">
+            </tbody>
     </table>
 
     <script>
-    // Helper to fill the form for updates
-    function fillForm(data) {
-        document.getElementById('form_id').value = data.id;
-        document.getElementById('form_name').value = data.name;
-        document.getElementById('form_dob').value = data.dob;
-        document.getElementById('form_color').value = data.favorite_color;
-        document.getElementById('form_place').value = data.favorite_place;
-        document.getElementById('form_nickname').value = data.nickname;
-    }
-    </script>
+        // Initialize Data from LocalStorage or empty array
+        let personalData = JSON.parse(localStorage.getItem('wk3_data')) || [];
 
-</body>
-</html>
+        // Function to Display Data in Table
+        function renderTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = "";
+            
+            personalData.forEach((item, index) => {
+                const row = `<tr>
+                    <td>${item.name}</td>
+                    <td>${item.dob}</td>
+                    <td>${item.color}</td>
+                    <td>${item.place}</td>
+                    <td>${item.nickname}</td>
+                    <td>
+                        <button class="btn-edit" onclick="fillForm(${index})">Edit</button> |
