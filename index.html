@@ -1,44 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Brosal3735 Wk 3 Performance Assessment</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #eee; }
-        form { background: #f4f4f4; padding: 20px; border-radius: 8px; border: 1px solid #ccc; max-width: 400px; }
-        input { margin-bottom: 10px; display: block; width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        .btn-group { margin-top: 10px; }
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 4px; }
-        .btn-add { background-color: #28a745; color: white; }
-        .btn-update { background-color: #007bff; color: white; display: none; }
-        .btn-delete { color: #d9534f; text-decoration: none; cursor: pointer; font-weight: bold; }
-        .btn-edit { background: #6c757d; color: white; padding: 5px 10px; }
+        body { font-family: sans-serif; padding: 20px; }
+        form { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; width: 300px; }
+        input { margin-bottom: 10px; display: block; width: 100%; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
 
     <h1>Brosal3735 Wk 3 Performance Assessment</h1>
 
-    <form id="infoForm">
-        <h3>Add/Update Information</h3>
-        <input type="hidden" id="form_id">
-        <input type="text" id="form_name" placeholder="Name" required>
-        <input type="date" id="form_dob" required>
-        <input type="text" id="form_color" placeholder="Favorite Color">
-        <input type="text" id="form_place" placeholder="Favorite Place to Visit">
-        <input type="text" id="form_nickname" placeholder="Nickname">
+    <div id="entryForm">
+        <input type="hidden" id="editIndex">
+        <input type="text" id="name" placeholder="Name">
+        <input type="date" id="dob">
+        <input type="text" id="color" placeholder="Favorite Color">
+        <input type="text" id="place" placeholder="Favorite Place">
+        <input type="text" id="nickname" placeholder="Nickname">
         
-        <div class="btn-group">
-            <button type="button" id="addBtn" class="btn-add" onclick="saveData()">Add New</button>
-            <button type="button" id="updateBtn" class="btn-update" onclick="updateData()">Update Existing</button>
-        </div>
-    </form>
+        <button type="button" id="submitBtn" onclick="handleAction()">Add New</button>
+    </div>
 
-    <table>
+    <table id="myTable">
         <thead>
             <tr>
                 <th>Name</th>
@@ -49,20 +36,18 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody id="dataTableBody">
-            </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 
     <script>
-        // Initialize Data from LocalStorage or empty array
-        let personalData = JSON.parse(localStorage.getItem('wk3_data')) || [];
+        // Start with empty data or stored data
+        let dataStore = JSON.parse(localStorage.getItem('wk3Data')) || [];
 
-        // Function to Display Data in Table
         function renderTable() {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = "";
-            
-            personalData.forEach((item, index) => {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ""; // Clear existing rows
+
+            dataStore.forEach((item, index) => {
                 const row = `<tr>
                     <td>${item.name}</td>
                     <td>${item.dob}</td>
@@ -70,4 +55,74 @@
                     <td>${item.place}</td>
                     <td>${item.nickname}</td>
                     <td>
-                        <button class="btn-edit" onclick="fillForm(${index})">Edit</button> |
+                        <button onclick="editRow(${index})">Edit</button>
+                        <button onclick="deleteRow(${index})">Delete</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            // Save back to browser storage
+            localStorage.setItem('wk3Data', JSON.stringify(dataStore));
+        }
+
+        function handleAction() {
+            const nameInput = document.getElementById('name').value;
+            const dobInput = document.getElementById('dob').value;
+            const editIdx = document.getElementById('editIndex').value;
+
+            if (!nameInput || !dobInput) {
+                alert("Please fill in Name and DOB");
+                return;
+            }
+
+            const newEntry = {
+                name: nameInput,
+                dob: dobInput,
+                color: document.getElementById('color').value,
+                place: document.getElementById('place').value,
+                nickname: document.getElementById('nickname').value
+            };
+
+            if (editIdx === "") {
+                // Add mode
+                dataStore.push(newEntry);
+            } else {
+                // Update mode
+                dataStore[editIdx] = newEntry;
+                document.getElementById('editIndex').value = "";
+                document.getElementById('submitBtn').innerText = "Add New";
+            }
+
+            // Clear inputs
+            document.getElementById('name').value = "";
+            document.getElementById('dob').value = "";
+            document.getElementById('color').value = "";
+            document.getElementById('place').value = "";
+            document.getElementById('nickname').value = "";
+
+            renderTable();
+        }
+
+        function deleteRow(index) {
+            dataStore.splice(index, 1);
+            renderTable();
+        }
+
+        function editRow(index) {
+            const item = dataStore[index];
+            document.getElementById('name').value = item.name;
+            document.getElementById('dob').value = item.dob;
+            document.getElementById('color').value = item.color;
+            document.getElementById('place').value = item.place;
+            document.getElementById('nickname').value = item.nickname;
+            
+            document.getElementById('editIndex').value = index;
+            document.getElementById('submitBtn').innerText = "Update";
+        }
+
+        // Run this when the page first loads
+        renderTable();
+    </script>
+</body>
+</html>
